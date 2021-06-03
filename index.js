@@ -15,7 +15,7 @@ function manageOrg() {
       name: 'action',
       type: 'list',
       message: 'Select an action...',
-      choices: ['Add employee', 'Add department', 'Add role', 'View departments', 'Quit'],
+      choices: ['Add employee', 'Add department', 'Add role', 'View departments', 'View roles', 'Quit'],
     })
     .then((action) => {
         switch (action.action) {
@@ -30,6 +30,9 @@ function manageOrg() {
                 break;
             case 'View departments':
                 viewDepartments();
+                break;
+            case 'View roles':
+                viewRoles();
                 break;
             case 'Quit':
                 console.log('Goodbye');
@@ -114,6 +117,14 @@ function addRole() {
 
       });
   });
+}
+
+function viewRoles() {
+    connection.query('SELECT role.title, role.salary, department.name FROM role LEFT JOIN department ON role.department_id=department.id', (err, data) => {
+        if (err) throw err;
+        console.table(data);
+        manageOrg();
+    })
 }
 
 connection.connect((err) => {
