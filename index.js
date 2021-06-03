@@ -15,7 +15,7 @@ function manageOrg() {
       name: 'action',
       type: 'list',
       message: 'Select an action...',
-      choices: ['Add employee', 'Add department', 'Add role', 'View departments', 'View roles', 'Quit'],
+      choices: ['Add employee', 'Add department', 'Add role', 'View employees', 'View departments', 'View roles', 'Quit'],
     })
     .then((action) => {
         switch (action.action) {
@@ -27,6 +27,9 @@ function manageOrg() {
                 break;
             case 'Add role':
                 addRole();
+                break;
+            case 'View employees':
+                viewEmployees();
                 break;
             case 'View departments':
                 viewDepartments();
@@ -120,7 +123,19 @@ function addEmployee() {
     });
 });
 }
-  
+
+function viewEmployees() {
+    connection.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(b.first_name, " ", b.last_name) AS Manager FROM employee LEFT JOIN role ON employee.role_id=role.id INNER JOIN department ON role.id=department.id LEFT JOIN employee AS b ON employee.manager_id=b.id', (err, data) => {
+        if (err) throw err;
+        console.table(data);
+        manageOrg();
+    })
+}
+
+
+
+
+
   function addDepartment() {
     inquirer
     .prompt([
