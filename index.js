@@ -17,25 +17,16 @@ function manageOrg() {
       message: 'Select an action...',
       choices: ['Add employee', 'Add department', 'Add role', 'Quit'],
     })
-    // .then((action) => {
-    //     if (action === 'Quit') {
-    //         console.log('Goodbye');
-    //         connection.end();
-    //     }
-    // });
     .then((action) => {
         switch (action.action) {
             case 'Add employee':
                 console.log('employee added');
-                connection.end();
                 break;
             case 'Add department':
-                console.log('department added');
-                connection.end();
+                addDepartment();
                 break;
             case 'Add role':
                 console.log('role added');
-                connection.end();
                 break;
             case 'Quit':
                 console.log('Goodbye');
@@ -43,6 +34,30 @@ function manageOrg() {
                 break;
         }
     });
+}
+
+function addDepartment() {
+    inquirer
+    .prompt([
+      {
+        name: 'department',
+        type: 'input',
+        message: 'Department name...',
+      }])
+    .then((data) => {
+      connection.query(
+        'INSERT INTO department SET ?',
+        {
+          name: data.department
+        },
+        (err) => {
+          if (err) throw err;
+          console.log('Department created.');
+          manageOrg();
+        }
+      );
+    });
+
 }
 
 connection.connect((err) => {
