@@ -15,7 +15,7 @@ function manageOrg() {
       name: 'action',
       type: 'list',
       message: 'Select an action...',
-      choices: ['Add employee', 'Add department', 'Add role', 'Quit'],
+      choices: ['Add employee', 'Add department', 'Add role', 'View departments', 'Quit'],
     })
     .then((action) => {
         switch (action.action) {
@@ -27,6 +27,9 @@ function manageOrg() {
                 break;
             case 'Add role':
                 console.log('role added');
+                break;
+            case 'View departments':
+                viewDepartments();
                 break;
             case 'Quit':
                 console.log('Goodbye');
@@ -57,7 +60,14 @@ function addDepartment() {
         }
       );
     });
+}
 
+function viewDepartments() {
+    connection.query('SELECT name FROM department', (err, data) => {
+        if (err) throw err;
+        console.table(data);
+        manageOrg();
+    })
 }
 
 connection.connect((err) => {
