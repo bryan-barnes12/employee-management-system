@@ -20,7 +20,7 @@ function manageOrg() {
     .then((action) => {
         switch (action.action) {
             case 'Add employee':
-                console.log('employee added');
+                addEmployee();
                 break;
             case 'Add department':
                 addDepartment();
@@ -42,7 +42,86 @@ function manageOrg() {
     });
 }
 
-function addDepartment() {
+function addEmployee() {
+    connection.query('SELECT * FROM role', (err, roleData) => {
+      if (err) throw err;
+      connection.query('SELECT * FROM employee', (err, managerData) => {
+        if (err) throw err;
+        inquirer
+        .prompt([
+            {
+            name: 'role',
+            type: 'rawlist',
+            choices() {
+                const roleArray = [];
+                roleData.forEach(({ title }) => {
+                roleArray.push(title);
+                });
+                return roleArray;
+            },
+            message: 'Role...',
+            },
+            {
+            name: 'manager',
+            type: 'rawlist',
+            choices() {
+                    const managerArray = [];
+                    managerData.forEach(({ first_name, last_name }) => {
+                    managerArray.push(first_name + ' ' + last_name);
+                    })
+                    managerArray.push('None')
+                    return managerArray;
+            },
+            message: 'Manager...',
+          },
+          {
+            name: 'first_name',
+            type: 'input',
+            message: 'First Name...',
+          },
+          {
+            name: 'last_name',
+            type: 'input',
+            message: 'Last Name...',
+          },
+          ])
+        .then((answer) => {
+            const roleId = roleData.filter(el => el.title === answer.role)
+            const managerId = managerData.filter(el => (el.first_name + ' ' + el.last_name) == answer.manager)
+            if (managerId.length) {
+                connection.query('INSERT INTO employee SET ?',
+                {
+                    first_name: answer.first_name,
+                    last_name: answer.last_name,
+                    role_id: roleId[0].id,
+                    manager_id: managerId[0].id
+                },
+                (err) => {
+                    if (err) throw err;
+                    console.log('Employee created.');
+                    manageOrg();
+                })
+            } else {
+                connection.query('INSERT INTO employee SET ?',
+                {
+                    first_name: answer.first_name,
+                    last_name: answer.last_name,
+                    role_id: roleId[0].id,
+                    manager_id: null
+                },
+                (err) => {
+                    if (err) throw err;
+                    console.log('Employee created.');
+                    manageOrg();
+                })
+
+            }
+        });
+    });
+});
+}
+  
+  function addDepartment() {
     inquirer
     .prompt([
       {
