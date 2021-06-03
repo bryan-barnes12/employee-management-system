@@ -26,7 +26,7 @@ function manageOrg() {
                 addDepartment();
                 break;
             case 'Add role':
-                console.log('role added');
+                addRole();
                 break;
             case 'View departments':
                 viewDepartments();
@@ -68,6 +68,52 @@ function viewDepartments() {
         console.table(data);
         manageOrg();
     })
+}
+
+function addRole() {
+  connection.query('SELECT * FROM department', (err, data) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: 'department',
+          type: 'rawlist',
+          choices() {
+            const deptArray = [];
+            data.forEach(({ name }) => {
+              deptArray.push(name);
+            });
+            return deptArray;
+          },
+          message: 'Department...',
+        },
+        {
+            name: 'title',
+            type: 'input',
+            message: 'Title...',
+          },
+        {
+          name: 'salary',
+          type: 'input',
+          message: 'Salary...',
+        },
+        ])
+      .then((answer) => {
+          const deptId = data.filter(el => el.name === answer.department)
+          connection.query('INSERT INTO role SET ?',
+          {
+              title: answer.title,
+              salary: answer.salary,
+              department_id: deptId[0].id
+          },
+          (err) => {
+              if (err) throw err;
+              console.log('Role created.');
+              manageOrg();
+          })
+
+      });
+  });
 }
 
 connection.connect((err) => {
