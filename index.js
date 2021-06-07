@@ -15,7 +15,7 @@ function manageOrg() {
       name: 'action',
       type: 'list',
       message: 'Select an action...',
-      choices: ['Add employee', 'Add department', 'Add role', 'View employees', 'View departments', 'View roles', 'Quit'],
+      choices: ['Add employee', 'Add department', 'Add role', 'View employees', 'View departments', 'View roles', 'Update employee role', 'Quit'],
     })
     .then((action) => {
         switch (action.action) {
@@ -36,6 +36,9 @@ function manageOrg() {
                 break;
             case 'View roles':
                 viewRoles();
+                break;
+            case 'Update employee role':
+                updateEmployee();
                 break;
             case 'Quit':
                 console.log('Goodbye');
@@ -125,14 +128,67 @@ function addEmployee() {
 }
 
 function viewEmployees() {
-    connection.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(b.first_name, " ", b.last_name) AS Manager FROM employee LEFT JOIN role ON employee.role_id=role.id INNER JOIN department ON role.id=department.id LEFT JOIN employee AS b ON employee.manager_id=b.id', (err, data) => {
+    connection.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(b.first_name, " ", b.last_name) AS Manager FROM employee LEFT JOIN role ON employee.role_id=role.id LEFT JOIN department ON role.id=department.id LEFT JOIN employee AS b ON employee.manager_id=b.id', (err, data) => {
         if (err) throw err;
         console.table(data);
         manageOrg();
     })
 }
 
-
+function updateEmployee() {
+    connection.query('SELECT * FROM role', (err, roleData) => {
+    if (err) throw err;
+    connection.query('SELECT * FROM employee', (err, employeeData) => {
+      if (err) throw err;
+      inquirer
+      .prompt([
+        {
+            name: 'employee',
+            type: 'rawlist',
+            choices() {
+                    const empArray = [];
+                    employeeData.forEach(({ first_name, last_name }) => {
+                    empArray.push(first_name + ' ' + last_name);
+                    })
+                    empArray.push('None')
+                    return empArray;
+            },
+            message: 'Manager...',
+          },
+            {
+          name: 'newRole',
+          type: 'rawlist',
+          choices() {
+              const roleArray = [];
+              roleData.forEach(({ title }) => {
+              roleArray.push(title);
+              });
+              return roleArray;
+          },
+          message: 'New role...',
+          },
+        ])
+      .then((answer) => {
+          const roleId = roleData.filter(el => el.title === answer.newRole);
+          const employeeId = employeeData.filter(el => (el.first_name + ' ' + el.last_name) == answer.employee)
+            connection.query('UPDATE employee SET ? WHERE ?',
+            [
+                {
+                    role_id: roleId[0].id
+                },
+                {
+                    id: employeeId[0].id
+                }
+            ],
+              (err) => {
+                  if (err) throw err;
+                  console.log('Employee role updated.');
+                  manageOrg();
+              })
+        });
+  });
+});
+}
 
 
 
