@@ -190,7 +190,12 @@ function updateEmployee() {
 });
 }
 
-
+function deleteEmployee() {
+    connection.query('DELETE FROM employee WHERE ?', 
+    {
+        
+    })
+}
 
   function addDepartment() {
     inquirer
