@@ -128,7 +128,7 @@ function addEmployee() {
 }
 
 function viewEmployees() {
-    connection.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(b.first_name, " ", b.last_name) AS Manager FROM employee LEFT JOIN role ON employee.role_id=role.id LEFT JOIN department ON role.id=department.id LEFT JOIN employee AS b ON employee.manager_id=b.id', (err, data) => {
+    connection.query('SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(b.first_name, " ", b.last_name) AS Manager FROM employee LEFT JOIN role ON employee.role_id=role.id LEFT JOIN department ON role.department_id=department.id LEFT JOIN employee AS b ON employee.manager_id=b.id', (err, data) => {
         if (err) throw err;
         console.table(data);
         manageOrg();
